@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------
+  # 🛰️ API GATEWAY (FastAPI Application)
+  # ---------------------------------------------------------
+  api_gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: whm-api-gateway:latest
+    container_name: whm_api_gateway
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://whm_admin:whm_secure_pass@db_postgres:5432/world_heat
+      - REDIS_URL=redis://redis_broker:6379/0
+      - WHM_NLP_MODEL=gemma-7b-geopol
+      - OPENAI_API_KEY=YOUR_SECRETS_GUARDED
+      - STRIPE_SECRET_KEY=YOUR_SECRETS_GUARDED
+      - JWT_SECRET_KEY=YOUR_SECRETS_GUARDED
+      - ENVIRONMENT=production
+    depends_on:
+      - db_postgres
+      - redis_broker
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+
+  # ---------------------------------------------------------
+  # ⚙️ DISTRIBUTED BACKGROUND WORKERS (Celery)
+  # ---------------------------------------------------------
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: whm-api-gateway:latest
+    container_name: whm_celery_worker
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://whm_admin:whm_secure_pass@db_postgres:5432/world_heat
+      - REDIS_URL=redis://redis_broker:6379/0
+      - ENVIRONMENT=production
+    depends_on:
+      - db_postgres
+      - redis_broker
+    command: celery -A tasks.celery_app worker --loglevel=info --concurrency=4 -Q default,intelligence_priority
+
+  # ---------------------------------------------------------
+  # 🕒 TASK SCHEDULER & CRON SERVICE (Celery Beat)
+  # ---------------------------------------------------------
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: whm-api-gateway:latest
+    container_name: whm_celery_beat
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://whm_admin:whm_secure_pass@db_postgres:5432/world_heat
+      - REDIS_URL=redis://redis_broker:6379/0
+    depends_on:
+      - db_postgres
+      - redis_broker
+    command: celery -A tasks.celery_app beat --loglevel=info
+
+  # ---------------------------------------------------------
+  # 📥 ASYNCHRONOUS MESSAGE BROKER & CACHE (Redis)
+  # ---------------------------------------------------------
+  redis_broker:
+    image: redis:7.0-alpine
+    container_name: whm_redis_broker
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # ---------------------------------------------------------
+  # 🗄️ PERSISTENT STORAGE ENGINE (PostgreSQL)
+  # ---------------------------------------------------------
+  db_postgres:
+    image: postgres:15-alpine
+    container_name: whm_db_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=whm_admin
+      - POSTGRES_PASSWORD=whm_secure_pass
+      - POSTGRES_DB=world_heat
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
