@@ -1,4 +1,4 @@
-# 🛰️ World Heat Monitor (WHM) · Escaparate Público y Portafolio
+# 🛰️ World Heat Monitor (WHM) · Escaparate Público 
 
 > **Plataforma de Inteligencia Geopolítica OSINT en Tiempo Real**
 > 
