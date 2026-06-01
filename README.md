@@ -22,12 +22,12 @@
 
 ## 🌌 Descripción General del Sistema
 
-World Heat Monitor (WHM) es una plataforma táctica de monitorización geopolítica. Ingesta miles de señales OSINT por segundo provenientes de múltiples vectores en tiempo real (X, Telegram, CFR y canales de rastreo militar), las procesa a través de una tubería asíncrona de procesamiento de lenguaje natural (NLP) para extraer inteligencia estructurada y las visualiza en un HUD táctico 3D.
+World Heat Monitor (WHM) es una plataforma táctica de monitorización geopolítica. Ingesta señales OSINT de alta frecuencia de múltiples vectores en tiempo real (X, Telegram, CFR, canales de rastreo militar), las procesa a través de una tubería asíncrona NLP para extraer inteligencia estructurada y las visualiza en un HUD táctico 3D. La capacidad de ingesta es alta; el throughput de procesamiento está acotado por la inferencia NLP (escala horizontalmente o sobre GPU dedicada).
 
 ### Capacidades Clave:
-*   **Ingesta LIFO Zero-Latency:** Procesamiento de colas mediante orden LIFO (Last-In-First-Out) y derivación asíncrona para evitar latencias en el arranque y garantizar la ingesta de señales críticas en menos de 60 segundos.
+*   **Ingesta LIFO de Baja Latencia:** Procesamiento de colas LIFO (Last-In-First-Out) con derivación asíncrona para priorizar señales críticas. Latencia de ingesta acotada: señales de alta prioridad disponibles en el pipeline en **menos de 60 segundos** bajo carga normal.
 *   **Arquitectura Segura por Diseño (Secure-by-Design):** Ciclo de vida de memoria de confianza cero (Zero Trust). Autenticación JWT estrictamente en memoria (sin uso de localStorage ni cookies persistentes) y endpoints administrativos completamente aislados.
-*   **Análisis con IA Agéntica (Capa Cognitiva):** Inyección dinámica de contexto combinando perfiles permanentes de países y registros dinámicos de memoria de conflictos para evitar alucinaciones en el LLM, generando incidentes en JSON estructurado y narrativas duales.
+*   **Análisis con IA Agéntica (Capa Cognitiva):** Inyección dinámica de contexto combinando perfiles estáticos de países y memoria dinámica de conflictos activos como mitigación estructural de alucinaciones del LLM. Genera incidentes en JSON estructurado validado por esquema Pydantic y narrativas duales. *(Sin evals de tasa de alucinación: las mitigaciones son arquitectónicas, no métricas.)*
 *   **Mapeo 3D de Alta Fidelidad:** Cuadro de mando HUD de estética militar en Next.js 16 con renderizado geoespacial 3D personalizado con Mapbox GL, integrando líneas de guía, vectores de ataque y seguimiento de frentes activos.
 
 ---
@@ -113,4 +113,6 @@ Si eres una empresa de análisis de riesgos, consultoría de seguridad o socio t
 *   **LinkedIn:** [linkedin.com/in/juan-pedro-r-f-313954241/](https://www.linkedin.com/in/juan-pedro-r-f-313954241/)
 
 ---
-*Estado Operativo: [ACTIVO] · Nivel de Seguridad: [VERIFICADO]*
+
+> [!NOTE]
+> **Estado técnico honesto:** El sistema está operativo end-to-end en entorno de desarrollo (ingesta → procesamiento NLP → visualización 3D). Las áreas pendientes para un despliegue de producción con SLA son: observabilidad estructurada (trazas distribuidas), tests de carga y alta disponibilidad. Saber qué falta es parte del diseño.
